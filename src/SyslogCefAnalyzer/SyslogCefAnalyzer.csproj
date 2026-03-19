@@ -8,7 +8,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>SyslogCEFAnalyzer</AssemblyName>
     <RootNamespace>SyslogCEFAnalyzer</RootNamespace>
-    <Version>1.0.0</Version>
+    <Version>2.0.0</Version>
     <Description>Syslog and CEF Message Format Analyzer for Azure Monitor Agent</Description>
   </PropertyGroup>
 

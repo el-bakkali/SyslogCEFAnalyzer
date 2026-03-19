@@ -348,10 +348,62 @@ public static partial class SyslogParser
             {
                 cef.Extension = ext;
             }
+
+            // Parse extension key=value pairs
+            cef.ExtensionFields = ParseCefExtensionFields(cef.Extension);
         }
 
         if (parts.Count < 7)
             msg.ValidationErrors.Add($"CEF header has {cef.PipeCount} pipes (expected exactly 7 separating 8 fields). Missing fields.");
+    }
+
+    /// <summary>Parse CEF extension key=value pairs. Handles multi-word values.</summary>
+    private static Dictionary<string, string> ParseCefExtensionFields(string extension)
+    {
+        var fields = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase);
+        if (string.IsNullOrWhiteSpace(extension)) return fields;
+
+        // CEF extension: key1=value1 key2=value2 ...
+        // Keys are alphanumeric, values run until the next key= pattern
+        var keyPositions = new List<(int KeyStart, int EqPos, string Key)>();
+
+        int i = 0;
+        while (i < extension.Length)
+        {
+            // Find key=
+            int eqPos = extension.IndexOf('=', i);
+            if (eqPos < 0) break;
+
+            // Key is the word/token immediately before '='
+            int keyStart = eqPos - 1;
+            while (keyStart >= i && extension[keyStart] != ' ')
+                keyStart--;
+            keyStart++;
+
+            string key = extension[keyStart..eqPos];
+            if (key.Length > 0 && key.All(c => char.IsLetterOrDigit(c) || c == '.' || c == '_'))
+                keyPositions.Add((keyStart, eqPos, key));
+
+            i = eqPos + 1;
+        }
+
+        // Extract values: each value runs from after '=' to the start of the next key
+        for (int k = 0; k < keyPositions.Count; k++)
+        {
+            int valueStart = keyPositions[k].EqPos + 1;
+            int valueEnd = k + 1 < keyPositions.Count
+                ? keyPositions[k + 1].KeyStart - 1 // -1 for the space before next key
+                : extension.Length;
+
+            if (valueEnd > extension.Length) valueEnd = extension.Length;
+            if (valueStart > valueEnd) valueStart = valueEnd;
+
+            string value = extension[valueStart..valueEnd].Trim();
+            if (!fields.ContainsKey(keyPositions[k].Key))
+                fields[keyPositions[k].Key] = value;
+        }
+
+        return fields;
     }
 
     private static List<string> SplitCefPipes(string text)
@@ -408,14 +460,31 @@ public static partial class SyslogParser
         }
     }
 
-    /// <summary>Parse a log file (syslog/messages) line by line.</summary>
+    /// <summary>Parse a log file (syslog/messages) line by line with input validation.</summary>
     public static List<SyslogMessage> ParseLogFile(string filePath)
     {
         const int MaxLineLength = 65536; // 64 KB per line
+        const int BinaryCheckSize = 512;
+
+        // Input validation: check file is text, not binary (OWASP input validation)
+        using (var checkStream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+        {
+            byte[] probe = new byte[Math.Min(BinaryCheckSize, checkStream.Length)];
+            int probeRead = checkStream.Read(probe, 0, probe.Length);
+            int nullCount = 0;
+            for (int i = 0; i < probeRead; i++)
+            {
+                if (probe[i] == 0) nullCount++;
+            }
+            // If more than 10% null bytes in first 512 bytes, likely binary
+            if (probeRead > 0 && (double)nullCount / probeRead > 0.1)
+                throw new InvalidDataException("File appears to be binary, not a text log file. Use .pcap/.pcapng extension for packet captures.");
+        }
+
         var messages = new List<SyslogMessage>();
         int index = 0;
 
-        foreach (string line in File.ReadLines(filePath, Encoding.UTF8))
+        foreach (string line in File.ReadLines(filePath, System.Text.Encoding.UTF8))
         {
             if (string.IsNullOrWhiteSpace(line)) continue;
 

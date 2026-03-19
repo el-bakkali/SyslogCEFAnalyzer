@@ -82,6 +82,25 @@ public sealed class SyslogMessage
     public List<string> ValidationWarnings { get; set; } = [];
 
     public bool IsValid => ValidationErrors.Count == 0;
+
+    /// <summary>
+    /// Summary line for display in drill-down UI.
+    /// </summary>
+    public string DisplaySummary
+    {
+        get
+        {
+            string format = DetectedFormat.ToString();
+            string severity = SyslogSeverity?.ToString() ?? "-";
+            string host = Hostname ?? SourceIp ?? "-";
+            string raw = Message ?? RawMessage;
+            string preview = raw.Length <= 120 ? raw : raw[..120] + "…";
+            return $"[{format}] {host} | {severity} | {preview}";
+        }
+    }
+
+    /// <summary>Indicates if this message has any issues (errors or warnings).</summary>
+    public bool HasIssues => ValidationErrors.Count > 0 || ValidationWarnings.Count > 0;
 }
 
 // ── CEF header fields ────────────────────────────────────────────────
@@ -94,8 +113,11 @@ public sealed class CefHeader
     public string? DeviceEventClassId { get; set; }
     public string? Name { get; set; }
     public string? Severity { get; set; }      // 0-10 or string like "Low"
-    public string? Extension { get; set; }     // key=value pairs
+    public string? Extension { get; set; }     // raw key=value pairs string
     public int PipeCount { get; set; }         // Should be exactly 7 pipes
+
+    /// <summary>Parsed CEF extension key-value pairs.</summary>
+    public Dictionary<string, string> ExtensionFields { get; set; } = [];
 }
 
 // ── Analysis finding ─────────────────────────────────────────────────
@@ -109,6 +131,9 @@ public sealed class AnalysisFinding
     public string? Recommendation { get; init; }
     public string? WiresharkFilter { get; init; }
     public List<int> RelatedMessageIndices { get; init; } = [];
+
+    /// <summary>Security compliance tag (e.g. "OWASP-A03", "NIST-DE.AE", "CIS-8.2").</summary>
+    public string? ComplianceTag { get; init; }
 }
 
 // ── Analysis report ──────────────────────────────────────────────────
@@ -123,6 +148,9 @@ public sealed class AnalysisReport
     public int CefCount { get; set; }
     public int InvalidCount { get; set; }
     public List<AnalysisFinding> Findings { get; set; } = [];
+
+    /// <summary>Warnings from the pcap/log parser (truncation, format issues).</summary>
+    public List<string> ParseWarnings { get; set; } = [];
 
     public int PassCount => Findings.Count(f => f.Severity == Severity.Pass);
     public int InfoCount => Findings.Count(f => f.Severity == Severity.Info);
@@ -140,4 +168,18 @@ public static class SyslogPorts
 
     public static bool IsSyslogPort(ushort port) =>
         port is SyslogUdp or SyslogTcp or SyslogTls or AmaListener;
+}
+
+// ── Allowed file extensions for security validation ──────────────────
+public static class AllowedFileTypes
+{
+    private static readonly HashSet<string> PcapExtensions = new(StringComparer.OrdinalIgnoreCase)
+        { ".pcap", ".pcapng", ".cap" };
+
+    private static readonly HashSet<string> LogExtensions = new(StringComparer.OrdinalIgnoreCase)
+        { ".log", ".txt", ".syslog" };
+
+    public static bool IsPcap(string extension) => PcapExtensions.Contains(extension);
+    public static bool IsLog(string extension) => LogExtensions.Contains(extension);
+    public static bool IsAllowed(string extension) => IsPcap(extension) || IsLog(extension);
 }

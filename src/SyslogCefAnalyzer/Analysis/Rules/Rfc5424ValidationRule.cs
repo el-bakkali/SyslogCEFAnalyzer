@@ -97,6 +97,7 @@ public sealed class Rfc5424ValidationRule : IAnalysisRule
                 Title = $"{lengthErrors.Count} messages exceed RFC 5424 field length limits",
                 Detail = string.Join("\n", errorSummary),
                 Recommendation = "Truncate fields to RFC 5424 limits: HOSTNAME ≤255, APP-NAME ≤48, PROCID ≤128, MSGID ≤32.",
+                ComplianceTag = "OWASP-A03 | NIST-PR.DS-1",
                 RelatedMessageIndices = lengthErrors.Take(10).Select(m => m.Index).ToList()
             });
         }

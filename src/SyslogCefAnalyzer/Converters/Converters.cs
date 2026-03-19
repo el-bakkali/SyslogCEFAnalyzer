@@ -89,3 +89,32 @@ public sealed class StringToVisibilityConverter : IValueConverter
     public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
         throw new NotSupportedException();
 }
+
+/// <summary>Maps SyslogFormat → SolidColorBrush for format badges in drill-down.</summary>
+public sealed class FormatToColorConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+        value is SyslogFormat f ? f switch
+        {
+            SyslogFormat.RFC3164 => new SolidColorBrush(Color.FromRgb(0x4C, 0xAF, 0x50)),
+            SyslogFormat.RFC5424 => new SolidColorBrush(Color.FromRgb(0x21, 0x96, 0xF3)),
+            SyslogFormat.CEF => new SolidColorBrush(Color.FromRgb(0xFF, 0x98, 0x00)),
+            SyslogFormat.Invalid => new SolidColorBrush(Color.FromRgb(0xF4, 0x43, 0x36)),
+            _ => new SolidColorBrush(Colors.Gray)
+        } : new SolidColorBrush(Colors.Gray);
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}
+
+/// <summary>Maps HasIssues bool → border color for message cards in drill-down.</summary>
+public sealed class HasIssueToColorConverter : IValueConverter
+{
+    public object Convert(object value, Type targetType, object parameter, CultureInfo culture) =>
+        value is true
+            ? new SolidColorBrush(Color.FromRgb(0xF4, 0x43, 0x36))    // red border for issues
+            : new SolidColorBrush(Color.FromRgb(0x3E, 0x3E, 0x42));   // neutral border
+
+    public object ConvertBack(object value, Type targetType, object parameter, CultureInfo culture) =>
+        throw new NotSupportedException();
+}

@@ -48,6 +48,7 @@ public sealed class CefValidationRule : IAnalysisRule
                 Title = $"{badPipes.Count} CEF messages have incorrect pipe count",
                 Detail = $"CEF requires exactly 7 pipe delimiters separating 8 header fields.\n{string.Join("\n", pipeCounts)}\n\nExpected format: CEF:version|vendor|product|deviceVersion|classId|name|severity|extension",
                 Recommendation = "Check the source device's CEF output format. Ensure pipes in field values are escaped as \\|.",
+                ComplianceTag = "OWASP-A03 | NIST-DE.AE-3 | ISO-27034-A.12",
                 RelatedMessageIndices = badPipes.Take(10).Select(m => m.Index).ToList()
             });
         }
@@ -79,6 +80,7 @@ public sealed class CefValidationRule : IAnalysisRule
                 Title = "CEF messages missing required vendor/product fields",
                 Detail = $"Empty DeviceVendor: {emptyVendor.Count}\nEmpty DeviceProduct: {emptyProduct.Count}\n\nThese fields are required and map to DeviceVendor/DeviceProduct columns in CommonSecurityLog.",
                 Recommendation = "Configure the source device to include vendor and product names in CEF output.",
+                ComplianceTag = "NIST-DE.AE-3 | CIS-8.2",
                 RelatedMessageIndices = emptyVendor.Concat(emptyProduct).Take(10).Select(m => m.Index).Distinct().ToList()
             });
         }
@@ -105,6 +107,21 @@ public sealed class CefValidationRule : IAnalysisRule
         var withExtension = cefMessages.Where(m => !string.IsNullOrWhiteSpace(m.Cef?.Extension)).ToList();
         var noExtension = cefMessages.Where(m => string.IsNullOrWhiteSpace(m.Cef?.Extension)).ToList();
 
+        // Surface CEF truncation as an explicit finding
+        var truncatedExt = cefMessages.Where(m => m.ValidationWarnings.Any(w => w.Contains("CEF extension field truncated"))).ToList();
+        if (truncatedExt.Count > 0)
+        {
+            findings.Add(new AnalysisFinding
+            {
+                RuleName = Name, Category = Category, Severity = Severity.Warning,
+                Title = $"{truncatedExt.Count} CEF messages have oversized extension fields (truncated for analysis)",
+                Detail = "Extension fields exceed 8 KB. Data beyond 8 KB was not analyzed and may contain critical security context.",
+                Recommendation = "Review source device logging verbosity. Large extensions may indicate multi-event concatenation or misconfigured output.",
+                ComplianceTag = "NIST-DE.AE-3 | CIS-8.5",
+                RelatedMessageIndices = truncatedExt.Take(10).Select(m => m.Index).ToList()
+            });
+        }
+
         if (noExtension.Count > 0)
         {
             findings.Add(new AnalysisFinding
@@ -114,6 +131,29 @@ public sealed class CefValidationRule : IAnalysisRule
                 Detail = "CEF extension fields (key=value pairs) provide additional context like source/destination IPs, ports, and URLs. Without them, the CommonSecurityLog entry will have minimal detail.",
                 RelatedMessageIndices = noExtension.Take(10).Select(m => m.Index).ToList()
             });
+        }
+
+        // CEF extension key analysis
+        if (withExtension.Count > 0)
+        {
+            var allKeys = withExtension
+                .Where(m => m.Cef?.ExtensionFields.Count > 0)
+                .SelectMany(m => m.Cef!.ExtensionFields.Keys)
+                .GroupBy(k => k, StringComparer.OrdinalIgnoreCase)
+                .OrderByDescending(g => g.Count())
+                .Take(15)
+                .ToList();
+            
+            if (allKeys.Count > 0)
+            {
+                string keyDetail = string.Join("\n", allKeys.Select(g => $"  {g.Key}: {g.Count()} messages"));
+                findings.Add(new AnalysisFinding
+                {
+                    RuleName = Name, Category = Category, Severity = Severity.Info,
+                    Title = $"Top CEF extension keys across {withExtension.Count} messages",
+                    Detail = keyDetail
+                });
+            }
         }
 
         // Vendor/product summary

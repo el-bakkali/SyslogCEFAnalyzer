@@ -228,9 +228,12 @@ public sealed partial class CiscoAsaFtdRule : IAnalysisRule
     }
 }
 
-// Helper extension
+// Helper extension — available project-wide
 internal static class StringExtensions
 {
-    public static string Truncate(this string value, int maxLength) =>
-        value.Length <= maxLength ? value : value[..maxLength] + "…";
+    public static string Truncate(this string? value, int maxLength)
+    {
+        if (value is null) return "";
+        return value.Length <= maxLength ? value : value[..maxLength] + "…";
+    }
 }

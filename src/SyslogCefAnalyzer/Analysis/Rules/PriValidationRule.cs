@@ -26,6 +26,7 @@ public sealed class PriValidationRule : IAnalysisRule
                 Title = $"{withoutPri.Count} messages missing PRI field",
                 Detail = $"Messages without a <PRI> header: {withoutPri.Count}. The PRI field is required by both RFC 3164 and RFC 5424. Messages without PRI may be dropped by rsyslog/syslog-ng or misclassified by AMA.",
                 Recommendation = "Ensure the source device includes a valid <PRI> value (e.g., <134> for local0.informational). Check the device's syslog configuration.",
+                ComplianceTag = "NIST-DE.AE-3 | CIS-8.2 | ISO-27034-A.12",
                 RelatedMessageIndices = withoutPri.Take(20).Select(m => m.Index).ToList()
             });
         }

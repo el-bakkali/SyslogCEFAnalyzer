@@ -2,6 +2,7 @@ namespace SyslogCEFAnalyzer;
 
 using System.Windows;
 using System.Windows.Input;
+using SyslogCEFAnalyzer.Models;
 using SyslogCEFAnalyzer.ViewModels;
 
 public partial class MainWindow : Window
@@ -46,6 +47,27 @@ public partial class MainWindow : Window
             Clipboard.SetText(filter);
             if (DataContext is MainViewModel vm)
                 vm.StatusMessage = $"Copied to clipboard: {filter}";
+            e.Handled = true;
+        }
+    }
+
+    /// <summary>Click on a finding to drill down to related messages.</summary>
+    private void Finding_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement el && el.DataContext is AnalysisFinding finding)
+        {
+            if (DataContext is MainViewModel vm)
+                vm.ShowRelatedMessagesCommand.Execute(finding);
+        }
+    }
+
+    /// <summary>Click on a format badge (RFC3164/RFC5424/CEF/Invalid) to filter.</summary>
+    private void FormatBadge_Click(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is FrameworkElement el && el.Tag is string format)
+        {
+            if (DataContext is MainViewModel vm)
+                vm.FilterByFormatCommand.Execute(format);
         }
     }
 }

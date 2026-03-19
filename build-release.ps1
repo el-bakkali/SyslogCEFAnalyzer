@@ -1,6 +1,6 @@
 # build-release.ps1 — Builds and packages Syslog/CEF Analyzer for GitHub Releases
 $ErrorActionPreference = "Stop"
-$Version = "1.0.0"
+$Version = "2.0.0"
 $ProjectPath = "src\SyslogCEFAnalyzer\SyslogCEFAnalyzer.csproj"
 $OutputDir = "release"
 $ZipName = "SyslogCEFAnalyzer-v$Version-win-x64.zip"

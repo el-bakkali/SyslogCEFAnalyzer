@@ -5,8 +5,8 @@
         xmlns:vm="clr-namespace:SyslogCEFAnalyzer.ViewModels"
         xmlns:models="clr-namespace:SyslogCEFAnalyzer.Models"
         Title="Syslog / CEF Analyzer"
-        Width="960" Height="750"
-        MinWidth="700" MinHeight="500"
+        Width="1200" Height="850"
+        MinWidth="800" MinHeight="600"
         WindowStartupLocation="CenterScreen"
         AllowDrop="True"
         Background="{StaticResource BgBrush}"
@@ -22,6 +22,9 @@
         <conv:BoolToVisibilityConverter x:Key="BoolVis" />
         <conv:InverseBoolToVisibilityConverter x:Key="InvBoolVis" />
         <conv:StringToVisibilityConverter x:Key="StrVis" />
+        <conv:NullToVisibilityConverter x:Key="NullVis" />
+        <conv:FormatToColorConverter x:Key="FmtColor" />
+        <conv:HasIssueToColorConverter x:Key="IssueColor" />
     </Window.Resources>
 
     <Grid>
@@ -53,167 +56,294 @@
             </Grid>
         </Border>
 
-        <!-- CONTENT -->
-        <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto" Padding="24,16">
-            <StackPanel>
+        <!-- CONTENT: Split view with findings on left, drill-down on right -->
+        <Grid Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" MinWidth="400" />
+                <ColumnDefinition Width="Auto" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
 
-                <!-- Drop zone -->
-                <Border Visibility="{Binding HasReport, Converter={StaticResource InvBoolVis}}"
-                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="8"
-                        Padding="40" Margin="0,16" Background="{StaticResource SurfaceBrush}">
-                    <StackPanel HorizontalAlignment="Center">
-                        <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center" />
-                        <TextBlock Text="Drop a .pcap, .pcapng, .log, .txt, or .syslog file here"
-                                   FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,12,0,0" />
-                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"
-                                   HorizontalAlignment="Center" Margin="0,8,0,0"
-                                   Text="Analyzes syslog (RFC 3164/5424) and CEF message formats" />
-                        <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
-                                   HorizontalAlignment="Center" Margin="0,16,0,0"
-                                   Text="pcap: extracts from ports 514/6514/28330 | log: parses each line" />
-                    </StackPanel>
-                </Border>
+            <!-- LEFT: Main analysis view -->
+            <ScrollViewer Grid.Column="0" VerticalScrollBarVisibility="Auto" Padding="24,16">
+                <StackPanel>
 
-                <!-- Loading -->
-                <StackPanel Visibility="{Binding IsAnalyzing, Converter={StaticResource BoolVis}}"
-                            HorizontalAlignment="Center" Margin="0,16">
-                    <ProgressBar IsIndeterminate="True" Width="300" />
-                    <TextBlock Text="{Binding StatusMessage}" HorizontalAlignment="Center"
-                               Foreground="{StaticResource TextSecondaryBrush}" Margin="0,12,0,0" />
-                </StackPanel>
-
-                <!-- Error -->
-                <Border Visibility="{Binding HasError, Converter={StaticResource BoolVis}}"
-                        Background="#33F44336" CornerRadius="6" Padding="16" Margin="0,0,0,16">
-                    <StackPanel>
-                        <TextBlock Text="⚠ Error" FontWeight="Bold" Foreground="{StaticResource RedBrush}" />
-                        <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Margin="0,8,0,0" />
-                    </StackPanel>
-                </Border>
-
-                <!-- Report -->
-                <StackPanel Visibility="{Binding HasReport, Converter={StaticResource BoolVis}}">
-
-                    <!-- Summary counters -->
-                    <Border Background="{StaticResource SurfaceBrush}" CornerRadius="6" Padding="16" Margin="0,0,0,16">
-                        <WrapPanel>
-                            <TextBlock Margin="0,0,24,0">
-                                <Run Text="📄 " /><Run Text="{Binding Report.FileName, Mode=OneWay}" FontWeight="SemiBold" />
-                            </TextBlock>
-                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,24,0">
-                                <Run Text="Messages: " /><Run Text="{Binding Report.TotalMessages, Mode=OneWay, StringFormat=N0}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
-                            </TextBlock>
-                        </WrapPanel>
+                    <!-- Drop zone -->
+                    <Border Visibility="{Binding HasReport, Converter={StaticResource InvBoolVis}}"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="2" CornerRadius="8"
+                            Padding="40" Margin="0,16" Background="{StaticResource SurfaceBrush}">
+                        <StackPanel HorizontalAlignment="Center">
+                            <TextBlock Text="📋" FontSize="48" HorizontalAlignment="Center" />
+                            <TextBlock Text="Drop a .pcap, .pcapng, .log, .txt, or .syslog file here"
+                                       FontSize="16" FontWeight="SemiBold" HorizontalAlignment="Center" Margin="0,12,0,0" />
+                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontSize="12"
+                                       HorizontalAlignment="Center" Margin="0,8,0,0"
+                                       Text="Analyzes syslog (RFC 3164/5424) and CEF message formats" />
+                            <TextBlock Foreground="{StaticResource TextSecondaryBrush}" FontSize="11"
+                                       HorizontalAlignment="Center" Margin="0,16,0,0"
+                                       Text="pcap: extracts from ports 514/6514/28330 | log: parses each line" />
+                        </StackPanel>
                     </Border>
 
-                    <!-- Format breakdown -->
-                    <UniformGrid Columns="4" Margin="0,0,0,16">
-                        <Border Background="#224CAF50" CornerRadius="6" Padding="12" Margin="0,0,4,0">
-                            <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="{Binding Report.Rfc3164Count, Mode=OneWay}" Foreground="{StaticResource GreenBrush}"
-                                           FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
-                                <TextBlock Text="RFC 3164" Foreground="{StaticResource GreenBrush}"
-                                           FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </Border>
-                        <Border Background="#222196F3" CornerRadius="6" Padding="12" Margin="4,0,4,0">
-                            <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="{Binding Report.Rfc5424Count, Mode=OneWay}" Foreground="{StaticResource BlueBrush}"
-                                           FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
-                                <TextBlock Text="RFC 5424" Foreground="{StaticResource BlueBrush}"
-                                           FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </Border>
-                        <Border Background="#22FF9800" CornerRadius="6" Padding="12" Margin="4,0,4,0">
-                            <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="{Binding Report.CefCount, Mode=OneWay}" Foreground="{StaticResource YellowBrush}"
-                                           FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
-                                <TextBlock Text="CEF" Foreground="{StaticResource YellowBrush}"
-                                           FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </Border>
-                        <Border Background="#22F44336" CornerRadius="6" Padding="12" Margin="4,0,0,0">
-                            <StackPanel HorizontalAlignment="Center">
-                                <TextBlock Text="{Binding Report.InvalidCount, Mode=OneWay}" Foreground="{StaticResource RedBrush}"
-                                           FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
-                                <TextBlock Text="INVALID" Foreground="{StaticResource RedBrush}"
-                                           FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" />
-                            </StackPanel>
-                        </Border>
-                    </UniformGrid>
+                    <!-- Loading -->
+                    <StackPanel Visibility="{Binding IsAnalyzing, Converter={StaticResource BoolVis}}"
+                                HorizontalAlignment="Center" Margin="0,16">
+                        <ProgressBar IsIndeterminate="True" Width="300" />
+                        <TextBlock Text="{Binding StatusMessage}" HorizontalAlignment="Center"
+                                   Foreground="{StaticResource TextSecondaryBrush}" Margin="0,12,0,0" />
+                    </StackPanel>
 
-                    <!-- Findings -->
-                    <ItemsControl ItemsSource="{Binding GroupedFindings}">
-                        <ItemsControl.ItemTemplate>
-                            <DataTemplate DataType="{x:Type vm:FindingGroup}">
-                                <Border Background="{StaticResource CardBrush}" CornerRadius="6"
-                                        BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
-                                        Margin="0,0,0,10">
-                                    <Expander IsExpanded="True">
-                                        <Expander.Header>
+                    <!-- Error -->
+                    <Border Visibility="{Binding HasError, Converter={StaticResource BoolVis}}"
+                            Background="#33F44336" CornerRadius="6" Padding="16" Margin="0,0,0,16">
+                        <StackPanel>
+                            <TextBlock Text="⚠ Error" FontWeight="Bold" Foreground="{StaticResource RedBrush}" />
+                            <TextBlock Text="{Binding ErrorMessage}" TextWrapping="Wrap" Margin="0,8,0,0" />
+                        </StackPanel>
+                    </Border>
+
+                    <!-- Report -->
+                    <StackPanel Visibility="{Binding HasReport, Converter={StaticResource BoolVis}}">
+
+                        <!-- Summary counters -->
+                        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="6" Padding="16" Margin="0,0,0,16">
+                            <WrapPanel>
+                                <TextBlock Margin="0,0,24,0">
+                                    <Run Text="📄 " /><Run Text="{Binding Report.FileName, Mode=OneWay}" FontWeight="SemiBold" />
+                                </TextBlock>
+                                <TextBlock Foreground="{StaticResource TextSecondaryBrush}" Margin="0,0,24,0">
+                                    <Run Text="Messages: " /><Run Text="{Binding Report.TotalMessages, Mode=OneWay, StringFormat=N0}" FontWeight="SemiBold" Foreground="{StaticResource TextPrimaryBrush}" />
+                                </TextBlock>
+                            </WrapPanel>
+                        </Border>
+
+                        <!-- Clickable format breakdown -->
+                        <UniformGrid Columns="4" Margin="0,0,0,16">
+                            <Border Background="#224CAF50" CornerRadius="6" Padding="12" Margin="0,0,4,0"
+                                    Cursor="Hand" MouseLeftButtonUp="FormatBadge_Click" Tag="RFC3164">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Report.Rfc3164Count, Mode=OneWay}" Foreground="{StaticResource GreenBrush}"
+                                               FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
+                                    <TextBlock Text="RFC 3164" Foreground="{StaticResource GreenBrush}"
+                                               FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#222196F3" CornerRadius="6" Padding="12" Margin="4,0,4,0"
+                                    Cursor="Hand" MouseLeftButtonUp="FormatBadge_Click" Tag="RFC5424">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Report.Rfc5424Count, Mode=OneWay}" Foreground="{StaticResource BlueBrush}"
+                                               FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
+                                    <TextBlock Text="RFC 5424" Foreground="{StaticResource BlueBrush}"
+                                               FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#22FF9800" CornerRadius="6" Padding="12" Margin="4,0,4,0"
+                                    Cursor="Hand" MouseLeftButtonUp="FormatBadge_Click" Tag="CEF">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Report.CefCount, Mode=OneWay}" Foreground="{StaticResource YellowBrush}"
+                                               FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
+                                    <TextBlock Text="CEF" Foreground="{StaticResource YellowBrush}"
+                                               FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                            <Border Background="#22F44336" CornerRadius="6" Padding="12" Margin="4,0,0,0"
+                                    Cursor="Hand" MouseLeftButtonUp="FormatBadge_Click" Tag="Invalid">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <TextBlock Text="{Binding Report.InvalidCount, Mode=OneWay}" Foreground="{StaticResource RedBrush}"
+                                               FontSize="28" FontWeight="Bold" HorizontalAlignment="Center" />
+                                    <TextBlock Text="INVALID" Foreground="{StaticResource RedBrush}"
+                                               FontSize="11" FontWeight="SemiBold" HorizontalAlignment="Center" />
+                                </StackPanel>
+                            </Border>
+                        </UniformGrid>
+
+                        <!-- Findings -->
+                        <ItemsControl ItemsSource="{Binding GroupedFindings}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type vm:FindingGroup}">
+                                    <Border Background="{StaticResource CardBrush}" CornerRadius="6"
+                                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="1"
+                                            Margin="0,0,0,10">
+                                        <Expander IsExpanded="True">
+                                            <Expander.Header>
+                                                <StackPanel Orientation="Horizontal">
+                                                    <TextBlock Text="{Binding WorstSeverity, Converter={StaticResource SevIcon}}"
+                                                               Foreground="{Binding WorstSeverity, Converter={StaticResource SevColor}}"
+                                                               FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0" />
+                                                    <TextBlock Text="{Binding Category}" FontSize="14" FontWeight="SemiBold"
+                                                               VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}" />
+                                                    <TextBlock VerticalAlignment="Center" Margin="8,0,0,0"
+                                                               Foreground="{StaticResource TextSecondaryBrush}" FontSize="12">
+                                                        <Run Text="(" /><Run Text="{Binding Findings.Count, Mode=OneWay}" /><Run Text=" findings)" />
+                                                    </TextBlock>
+                                                </StackPanel>
+                                            </Expander.Header>
+                                            <Expander.Content>
+                                                <ItemsControl ItemsSource="{Binding Findings}" Margin="4">
+                                                    <ItemsControl.ItemTemplate>
+                                                        <DataTemplate DataType="{x:Type models:AnalysisFinding}">
+                                                            <Border Background="{StaticResource SurfaceBrush}" CornerRadius="4"
+                                                                    Padding="12" Margin="0,0,0,6"
+                                                                    Cursor="Hand" MouseLeftButtonUp="Finding_Click">
+                                                                <Grid>
+                                                                    <Grid.ColumnDefinitions>
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                        <ColumnDefinition Width="*" />
+                                                                        <ColumnDefinition Width="Auto" />
+                                                                    </Grid.ColumnDefinitions>
+                                                                    <Border Grid.Column="0" Background="{Binding Severity, Converter={StaticResource SevColor}}"
+                                                                            CornerRadius="3" Padding="6,2" VerticalAlignment="Top" Margin="0,0,10,0">
+                                                                        <TextBlock Text="{Binding Severity, Converter={StaticResource SevIcon}}"
+                                                                                   Foreground="White" FontSize="12" FontWeight="Bold" />
+                                                                    </Border>
+                                                                    <StackPanel Grid.Column="1">
+                                                                        <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13" TextWrapping="Wrap" />
+                                                                        <TextBlock Text="{Binding Detail}" Foreground="{StaticResource TextSecondaryBrush}"
+                                                                                   TextWrapping="Wrap" Margin="0,4,0,0" FontSize="12" />
+                                                                        <Border Visibility="{Binding ComplianceTag, Converter={StaticResource StrVis}}"
+                                                                                Background="#180078D4" CornerRadius="3" Padding="6,3" Margin="0,4,0,0"
+                                                                                HorizontalAlignment="Left">
+                                                                            <TextBlock FontSize="10" Foreground="{StaticResource AccentBrush}">
+                                                                                <Run Text="🔒 " /><Run Text="{Binding ComplianceTag, Mode=OneWay}" />
+                                                                            </TextBlock>
+                                                                        </Border>
+                                                                        <Border Visibility="{Binding Recommendation, Converter={StaticResource StrVis}}"
+                                                                                Background="#180078D4" CornerRadius="3" Padding="8,6" Margin="0,6,0,0">
+                                                                            <TextBlock TextWrapping="Wrap" FontSize="12">
+                                                                                <Run Text="💡 " /><Run Text="{Binding Recommendation, Mode=OneWay}" />
+                                                                            </TextBlock>
+                                                                        </Border>
+                                                                        <Border Visibility="{Binding WiresharkFilter, Converter={StaticResource StrVis}}"
+                                                                                Background="#FF1A1A1A" CornerRadius="3" Padding="8,6" Margin="0,6,0,0"
+                                                                                Cursor="Hand" MouseLeftButtonUp="CopyFilter_Click" Tag="{Binding WiresharkFilter}">
+                                                                            <StackPanel Orientation="Horizontal">
+                                                                                <TextBlock Text="🔎 Wireshark: " FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
+                                                                                <TextBlock Text="{Binding WiresharkFilter}" FontSize="11" FontFamily="Consolas"
+                                                                                           Foreground="{StaticResource AccentBrush}" />
+                                                                                <TextBlock Text="  📋" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" ToolTip="Click to copy" />
+                                                                            </StackPanel>
+                                                                        </Border>
+                                                                    </StackPanel>
+                                                                    <!-- Drill-down indicator -->
+                                                                    <TextBlock Grid.Column="2" Text="→" FontSize="16"
+                                                                               Foreground="{StaticResource TextSecondaryBrush}"
+                                                                               VerticalAlignment="Center" Margin="8,0,0,0"
+                                                                               ToolTip="Click to view related messages" />
+                                                                </Grid>
+                                                            </Border>
+                                                        </DataTemplate>
+                                                    </ItemsControl.ItemTemplate>
+                                                </ItemsControl>
+                                            </Expander.Content>
+                                        </Expander>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </StackPanel>
+            </ScrollViewer>
+
+            <!-- SPLITTER -->
+            <GridSplitter Grid.Column="1" Width="3" HorizontalAlignment="Center"
+                          Background="{StaticResource BorderBrush}"
+                          Visibility="{Binding HasReport, Converter={StaticResource BoolVis}}" />
+
+            <!-- RIGHT: Drill-down message detail panel -->
+            <Border Grid.Column="2" Width="420"
+                    Background="{StaticResource SurfaceBrush}"
+                    BorderBrush="{StaticResource BorderBrush}" BorderThickness="1,0,0,0"
+                    Visibility="{Binding HasReport, Converter={StaticResource BoolVis}}">
+                <Grid>
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="Auto" />
+                        <RowDefinition Height="*" />
+                    </Grid.RowDefinitions>
+
+                    <!-- Detail header -->
+                    <Border Grid.Row="0" Background="{StaticResource CardBrush}" Padding="12,10"
+                            BorderBrush="{StaticResource BorderBrush}" BorderThickness="0,0,0,1">
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+                            <StackPanel>
+                                <TextBlock FontSize="13" FontWeight="SemiBold" Text="Message Detail" />
+                                <TextBlock FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" TextWrapping="Wrap"
+                                           Text="{Binding SelectedFinding.Title, FallbackValue='Click a finding or format badge to drill down'}" />
+                            </StackPanel>
+                            <Button Grid.Column="1" Content="✕" Style="{StaticResource SecondaryButton}"
+                                    Command="{Binding ClearDetailCommand}" VerticalAlignment="Top"
+                                    Padding="6,2" FontSize="11" ToolTip="Clear selection" />
+                        </Grid>
+                    </Border>
+
+                    <!-- Detail messages list -->
+                    <ScrollViewer Grid.Row="1" VerticalScrollBarVisibility="Auto">
+                        <ItemsControl ItemsSource="{Binding DetailMessages}" Margin="4">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate DataType="{x:Type models:SyslogMessage}">
+                                    <Border Background="{StaticResource CardBrush}" CornerRadius="4"
+                                            Padding="10" Margin="4,2"
+                                            BorderBrush="{Binding HasIssues, Converter={StaticResource IssueColor}}"
+                                            BorderThickness="2,0,0,0">
+                                        <StackPanel>
+                                            <!-- Message index and format -->
                                             <StackPanel Orientation="Horizontal">
-                                                <TextBlock Text="{Binding WorstSeverity, Converter={StaticResource SevIcon}}"
-                                                           Foreground="{Binding WorstSeverity, Converter={StaticResource SevColor}}"
-                                                           FontSize="16" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,8,0" />
-                                                <TextBlock Text="{Binding Category}" FontSize="14" FontWeight="SemiBold"
-                                                           VerticalAlignment="Center" Foreground="{StaticResource TextPrimaryBrush}" />
-                                                <TextBlock VerticalAlignment="Center" Margin="8,0,0,0"
-                                                           Foreground="{StaticResource TextSecondaryBrush}" FontSize="12">
-                                                    <Run Text="(" /><Run Text="{Binding Findings.Count, Mode=OneWay}" /><Run Text=" findings)" />
+                                                <TextBlock FontSize="10" Foreground="{StaticResource TextSecondaryBrush}"
+                                                           VerticalAlignment="Center" Margin="0,0,6,0">
+                                                    <Run Text="#" /><Run Text="{Binding Index, Mode=OneWay}" />
+                                                </TextBlock>
+                                                <Border Background="{Binding DetectedFormat, Converter={StaticResource FmtColor}}"
+                                                        CornerRadius="3" Padding="6,1" Margin="0,0,6,0">
+                                                    <TextBlock Text="{Binding DetectedFormat}" FontSize="10"
+                                                               Foreground="White" FontWeight="SemiBold" />
+                                                </Border>
+                                                <TextBlock FontSize="10" Foreground="{StaticResource TextSecondaryBrush}">
+                                                    <Run Text="{Binding Hostname, Mode=OneWay, TargetNullValue='-'}" />
+                                                    <Run Text=" | " />
+                                                    <Run Text="{Binding SourceIp, Mode=OneWay, TargetNullValue=''}" />
                                                 </TextBlock>
                                             </StackPanel>
-                                        </Expander.Header>
-                                        <Expander.Content>
-                                            <ItemsControl ItemsSource="{Binding Findings}" Margin="4">
+
+                                            <!-- Raw message (truncated) -->
+                                            <TextBlock Text="{Binding RawMessage}" FontFamily="Consolas" FontSize="11"
+                                                       Foreground="{StaticResource TextPrimaryBrush}"
+                                                       TextWrapping="Wrap" Margin="0,4,0,0"
+                                                       MaxHeight="80" TextTrimming="CharacterEllipsis"
+                                                       ToolTip="{Binding RawMessage}" />
+
+                                            <!-- Validation errors -->
+                                            <ItemsControl ItemsSource="{Binding ValidationErrors}" Margin="0,4,0,0">
                                                 <ItemsControl.ItemTemplate>
-                                                    <DataTemplate DataType="{x:Type models:AnalysisFinding}">
-                                                        <Border Background="{StaticResource SurfaceBrush}" CornerRadius="4"
-                                                                Padding="12" Margin="0,0,0,6">
-                                                            <Grid>
-                                                                <Grid.ColumnDefinitions>
-                                                                    <ColumnDefinition Width="Auto" />
-                                                                    <ColumnDefinition Width="*" />
-                                                                </Grid.ColumnDefinitions>
-                                                                <Border Grid.Column="0" Background="{Binding Severity, Converter={StaticResource SevColor}}"
-                                                                        CornerRadius="3" Padding="6,2" VerticalAlignment="Top" Margin="0,0,10,0">
-                                                                    <TextBlock Text="{Binding Severity, Converter={StaticResource SevIcon}}"
-                                                                               Foreground="White" FontSize="12" FontWeight="Bold" />
-                                                                </Border>
-                                                                <StackPanel Grid.Column="1">
-                                                                    <TextBlock Text="{Binding Title}" FontWeight="SemiBold" FontSize="13" TextWrapping="Wrap" />
-                                                                    <TextBlock Text="{Binding Detail}" Foreground="{StaticResource TextSecondaryBrush}"
-                                                                               TextWrapping="Wrap" Margin="0,4,0,0" FontSize="12" />
-                                                                    <Border Visibility="{Binding Recommendation, Converter={StaticResource StrVis}}"
-                                                                            Background="#180078D4" CornerRadius="3" Padding="8,6" Margin="0,6,0,0">
-                                                                        <TextBlock TextWrapping="Wrap" FontSize="12">
-                                                                            <Run Text="💡 " /><Run Text="{Binding Recommendation, Mode=OneWay}" />
-                                                                        </TextBlock>
-                                                                    </Border>
-                                                                    <Border Visibility="{Binding WiresharkFilter, Converter={StaticResource StrVis}}"
-                                                                            Background="#FF1A1A1A" CornerRadius="3" Padding="8,6" Margin="0,6,0,0"
-                                                                            Cursor="Hand" MouseLeftButtonUp="CopyFilter_Click" Tag="{Binding WiresharkFilter}">
-                                                                        <StackPanel Orientation="Horizontal">
-                                                                            <TextBlock Text="🔎 Wireshark: " FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" />
-                                                                            <TextBlock Text="{Binding WiresharkFilter}" FontSize="11" FontFamily="Consolas"
-                                                                                       Foreground="{StaticResource AccentBrush}" />
-                                                                            <TextBlock Text="  📋" FontSize="11" Foreground="{StaticResource TextSecondaryBrush}" ToolTip="Click to copy" />
-                                                                        </StackPanel>
-                                                                    </Border>
-                                                                </StackPanel>
-                                                            </Grid>
-                                                        </Border>
+                                                    <DataTemplate>
+                                                        <TextBlock FontSize="10" Foreground="{StaticResource RedBrush}" TextWrapping="Wrap">
+                                                            <Run Text="✕ " /><Run Text="{Binding Mode=OneWay}" />
+                                                        </TextBlock>
                                                     </DataTemplate>
                                                 </ItemsControl.ItemTemplate>
                                             </ItemsControl>
-                                        </Expander.Content>
-                                    </Expander>
-                                </Border>
-                            </DataTemplate>
-                        </ItemsControl.ItemTemplate>
-                    </ItemsControl>
-                </StackPanel>
-            </StackPanel>
-        </ScrollViewer>
+
+                                            <!-- Validation warnings -->
+                                            <ItemsControl ItemsSource="{Binding ValidationWarnings}" Margin="0,2,0,0">
+                                                <ItemsControl.ItemTemplate>
+                                                    <DataTemplate>
+                                                        <TextBlock FontSize="10" Foreground="{StaticResource YellowBrush}" TextWrapping="Wrap">
+                                                            <Run Text="⚠ " /><Run Text="{Binding Mode=OneWay}" />
+                                                        </TextBlock>
+                                                    </DataTemplate>
+                                                </ItemsControl.ItemTemplate>
+                                            </ItemsControl>
+                                        </StackPanel>
+                                    </Border>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </ScrollViewer>
+                </Grid>
+            </Border>
+        </Grid>
 
         <!-- STATUS BAR -->
         <Border Grid.Row="2" Background="{StaticResource SurfaceBrush}"
@@ -224,7 +354,7 @@
                     <ColumnDefinition Width="Auto" />
                 </Grid.ColumnDefinitions>
                 <TextBlock Text="{Binding StatusMessage}" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" VerticalAlignment="Center" />
-                <TextBlock Grid.Column="1" Text="Syslog/CEF Analyzer v1.0" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" VerticalAlignment="Center" />
+                <TextBlock Grid.Column="1" Text="Syslog/CEF Analyzer v2.0" Foreground="{StaticResource TextSecondaryBrush}" FontSize="11" VerticalAlignment="Center" />
             </Grid>
         </Border>
     </Grid>

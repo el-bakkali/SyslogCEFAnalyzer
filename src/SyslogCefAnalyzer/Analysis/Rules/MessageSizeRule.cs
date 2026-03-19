@@ -46,6 +46,7 @@ public sealed class MessageSizeRule : IAnalysisRule
                     Title = $"{oversized.Count} UDP messages exceed {UdpMaxRecommended} bytes",
                     Detail = $"UDP syslog messages over {UdpMaxRecommended} bytes may be truncated by network devices or the OS. Largest: {oversized.Max(m => m.RawMessage.Length)} bytes.",
                     Recommendation = "Switch to TCP (port 514) for reliable delivery of large messages, or reduce message size at the source.",
+                    ComplianceTag = "NIST-PR.PT-4 | CIS-8.5",
                     WiresharkFilter = "udp.port == 514 && udp.length > 2048",
                     RelatedMessageIndices = oversized.Take(10).Select(m => m.Index).ToList()
                 });

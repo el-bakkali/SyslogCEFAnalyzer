@@ -42,7 +42,8 @@ public sealed class FormatDetectionRule : IAnalysisRule
                      $"RFC 5424 (IETF Syslog): {rfc5424} ({Pct(rfc5424, messages.Count)}%)\n" +
                      $"CEF (Common Event Format): {cef} ({Pct(cef, messages.Count)}%)\n" +
                      $"Invalid / Unparseable: {invalid} ({Pct(invalid, messages.Count)}%)",
-            Recommendation = invalid > 0 ? "Review invalid messages — they may be truncated, malformed, or in an unsupported format." : null
+            Recommendation = invalid > 0 ? "Review invalid messages — they may be truncated, malformed, or in an unsupported format." : null,
+            ComplianceTag = invalid > 0 ? "OWASP-A03 | NIST-DE.AE-3 | CIS-8.2" : null
         });
 
         // AMA compatibility note
