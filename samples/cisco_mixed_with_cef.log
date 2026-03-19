@@ -1,0 +1,15 @@
+<166>Jan 15 12:34:56 asa01 %ASA-6-302013: Built inbound TCP connection 12345 for outside:203.0.113.5/45678 to inside:10.0.0.100/443
+<164>Jan 15 12:34:57 asa01 %ASA-4-106023: Deny tcp src outside:203.0.113.50/12345 dst inside:10.0.0.100/22
+<166>Jan 15 12:35:01 ftd01 %FTD-6-305012: Teardown dynamic TCP translation from inside:10.51.100.1/54453 to outside:10.0.2.3/54453
+<134>Jan 15 12:35:05 forwarder01 CEF:0|Cisco|ASA|9.18|106023|Deny|5|src=203.0.113.200 dst=10.0.0.100 spt=44444 dpt=22 proto=TCP act=Deny msg=access-list outside_in denied tcp
+<134>Jan 15 12:35:06 forwarder01 CEF:0|Cisco|Adaptive Security Appliance|9.16|302014|Teardown TCP|3|src=203.0.113.5 dst=10.0.0.100 spt=45678 dpt=443 act=Teardown msg=duration 0:00:30 bytes 15234
+<134>Jan 15 12:35:10 forwarder01 CEF:0|Cisco|Firepower|7.2|106001|Deny Inbound|7|src=203.0.113.100 dst=10.0.0.1 spt=12345 dpt=3389 act=Drop
+%ASA-4-106023: Deny tcp src outside:203.0.113.5/999 dst inside:10.0.0.1/80
+<134>Jan 15 12:35:15 forwarder01 CEF:0|Palo Alto Networks|PAN-OS|10.2.3|THREAT|url-filtering|5|src=192.168.1.100 dst=93.184.216.34 act=allow
+<38>Jan 15 12:35:20 linuxhost sshd[5678]: Accepted publickey for admin from 10.0.0.50 port 22 ssh2
+<164>Jan 15 12:35:25 asa02 %ASA-4-733100: [Scanning] drop rate-1 exceeded. Current burst rate is 25 per second, max configured rate is 10
+<166>Jan 15 12:35:30 ftd02 %FTD-6-302015: Built inbound UDP connection 11111 for outside:8.8.8.8/53 to inside:10.0.0.10/5353
+<134>Jan 15 12:35:35 forwarder01 CEF:0|Microsoft|Windows|10.0|4625|An account failed to log on|7|src=203.0.113.5 suser=administrator outcome=Failure
+<163>Jan 15 12:35:40 asa01 %ASA-3-402117: IPSEC: Received a packet (SPI=0x12345678) from 203.0.113.100 to 10.0.0.1 with an SPI mismatch
+This is a raw log line with no syslog format at all
+<162>Jan 15 12:35:45 asa01 %ASA-2-106001: Inbound TCP connection denied from 203.0.113.200/44444 to 10.0.0.100/3389 flags SYN

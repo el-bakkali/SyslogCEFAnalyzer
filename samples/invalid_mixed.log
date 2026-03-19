@@ -1,0 +1,27 @@
+<134>Jan 15 12:34:56 webserver01 nginx[1234]: Normal RFC 3164 message for baseline
+<134>1 2025-01-15T12:34:57.000Z appserver01 myapp 9012 - - Normal RFC 5424 message for baseline
+<134>Jan 15 12:35:00 forwarder01 CEF:0|TestVendor|TestProduct|1.0|100|Test Event|5|src=10.0.0.1 dst=10.0.0.2
+This line has no PRI field at all - just raw text
+Another line without any syslog formatting whatsoever
+<999>Jan 15 12:35:05 badhost invalid: PRI value 999 exceeds maximum of 191
+<>Jan 15 12:35:06 emptyhost invalid: Empty PRI value
+<abc>Jan 15 12:35:07 badhost invalid: Non-numeric PRI value
+Jan 15 12:35:10 noprihostname sshd[100]: Missing angle brackets around PRI entirely
+15/01/2025 12:35:15 wrongdate-host myapp: Wrong date format - not RFC 3164 Mmm dd
+2025-01-15 12:35:16 isodate-host myapp: ISO date in RFC 3164 position - should be Mmm dd
+Dec 32 25:61:99 badtime-host myapp: Impossible timestamp values
+<134>Jan 15 12:35:20 CEF:0|Missing|Pipes|Only four pipes here
+<134>Jan 15 12:35:21 forwarder01 CEF:0|NoSeverity
+<134>Jan 15 12:35:22 forwarder01 CEF:0||EmptyVendor|Product|1.0|100|Event|5|src=10.0.0.1
+<134>Jan 15 12:35:23 forwarder01 CEF:0|Vendor||EmptyProduct|1.0|100|Event|5|src=10.0.0.1
+<134>Jan 15 12:35:24 forwarder01 CEF:0|Vendor|Product|1.0|100|Event|InvalidSeverity|src=10.0.0.1
+<134>Jan 15 12:35:25 forwarder01 CEF:X|Vendor|Product|1.0|100|Event|5|src=10.0.0.1
+<134>1 2025-01-15T12:35:30.000Z thisnameiswaytoolongforanhostnamefielditexceedsthetwohundredandfiftycharacterlimitsetbyrfcfivefourtwofourwhichspecifiesthatthehostnamefieldmustnotexceedtwohundredandfiftycharactersinlengthandthismessageisdesignedtotriggerthatvalidationcheckintheparserruleengine myapp 9012 - - Message with hostname exceeding RFC 5424 255 char limit
+<134>1 2025-01-15T12:35:31.000Z host01 thisappnameexceedsthefortyeightcharacterlimitsetrfc5424spec 9012 - - APP-NAME too long
+<134>1 2025-13-45T99:99:99.000Z host01 myapp 9012 - - Impossible ISO 8601 timestamp
+<134>1 notadate host01 myapp 9012 - - Version present but timestamp is garbage
+<134>Jan 15 12:35:40 forwarder01 CEF:0|Vendor|Product|1.0|100|Event with unescaped | pipe in name|5|src=10.0.0.1
+
+
+<134>Jan 15 12:36:00 validhost sshd[1234]: This is a valid message between the invalid ones
+<134>Jan 15 12:36:05 forwarder01 CEF:0|Microsoft|Sentinel|1.0|200|Valid CEF Between Errors|3|outcome=Success

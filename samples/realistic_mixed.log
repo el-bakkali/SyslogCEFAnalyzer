@@ -1,0 +1,21 @@
+<134>Jan 15 12:34:56 webserver01 nginx[1234]: GET /api/health 200 45ms
+<134>1 2025-01-15T12:34:57.000Z appserver01 myapp 9012 STARTUP - Application v2.1 started
+<38>Jan 15 12:35:01 firewall01 sshd[5678]: Accepted publickey for admin from 10.0.0.50 port 22
+<134>Jan 15 12:35:02 forwarder01 CEF:0|Palo Alto Networks|PAN-OS|10.2|THREAT|url-filtering|5|src=192.168.1.100 dst=93.184.216.34 act=allow
+<134>1 2025-01-15T12:35:03.123Z firewall01 iptables 0 DROP001 - Dropped TCP 203.0.113.5:44231 -> 10.0.0.100:22
+This line has no syslog header at all
+<999>Jan 15 12:35:05 badpri invalid: PRI value out of range
+<134>Jan 15 12:35:06 forwarder01 CEF:0|Incomplete|CEF Message
+<134>1 2025-01-15T12:35:07.000Z host01 myapp 9012 - - Normal RFC 5424 message
+<38>Jan 15 12:35:08 authhost sshd[9999]: Failed password for root from 203.0.113.5
+<134>Jan 15 12:35:09 forwarder01 CEF:0|CrowdStrike|Falcon|6.45|1001|Malware Detected|9|src=10.0.0.50 fname=bad.exe act=Kill
+<86>1 2025-01-15T12:35:10.456Z mailserver01 postfix 3456 SMTP01 - Message queued for delivery
+<134>Jan 15 12:35:11 webserver02 apache[4567]: 192.168.1.200 - - "GET /index.html" 404 1234
+Raw log line from application stdout - no syslog framing
+<14>Jan 15 12:35:13 dbserver01 postgres[2345]: LOG: autovacuum launcher started
+<134>Jan 15 12:35:14 forwarder01 CEF:0|Fortinet|FortiGate|7.2|0419|ssl-blocked|7|src=192.168.1.200 dst=198.51.100.50 act=blocked
+<4>Jan 15 12:35:15 kernelhost kernel: [12345.678] segfault at 0000000000000000 in libc.so
+<134>1 2025-01-15T12:35:16.789Z container01 dockerd 1111 - [container id="abc123" image="nginx:latest"] Container started
+Another unstructured line that might appear in /var/log/messages
+<165>Jan 15 12:35:18 idshost snort[8901]: [1:2001:3] ET SCAN SSH Scan {TCP} 203.0.113.50:12345 -> 10.0.0.100:22
+<134>Jan 15 12:35:19 forwarder01 CEF:0|Microsoft|Windows|10.0|4625|Failed Logon|7|src=203.0.113.5 suser=admin outcome=Failure

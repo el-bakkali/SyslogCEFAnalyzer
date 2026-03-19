@@ -1,0 +1,20 @@
+<134>Jan 15 12:34:56 webserver01 nginx[1234]: 192.168.1.100 - - [15/Jan/2025:12:34:56 +0000] "GET /api/health HTTP/1.1" 200 45
+<134>Jan 15 12:34:57 webserver01 nginx[1234]: 192.168.1.101 - - [15/Jan/2025:12:34:57 +0000] "POST /api/data HTTP/1.1" 201 128
+<38>Jan 15 12:35:01 firewall01 sshd[5678]: Accepted publickey for admin from 10.0.0.50 port 22 ssh2
+<38>Jan 15 12:35:02 firewall01 sshd[5679]: Failed password for root from 203.0.113.5 port 44231 ssh2
+<134>Jan 15 12:35:10 appserver01 myapp[9012]: Starting application version 2.1.0
+<134>Jan 15 12:35:11 appserver01 myapp[9012]: Connected to database at db01.internal:5432
+<134>Jan 15 12:35:12 appserver01 myapp[9012]: Listening on port 8080
+<86>Jan 15 12:35:15 mailserver01 postfix/smtp[3456]: connect from mail.example.com[198.51.100.10]
+<86>Jan 15 12:35:16 mailserver01 postfix/smtp[3456]: disconnect from mail.example.com[198.51.100.10]
+<134>Jan 15 12:36:00 loadbalancer01 haproxy[7890]: 10.0.1.50:45123 [15/Jan/2025:12:36:00.123] frontend backend/server1 0/0/1/5/6 200 512 - - ---- 50/50/0/1/0 0/0 "GET /status HTTP/1.1"
+<14>Jan 15 12:36:05 dbserver01 postgres[2345]: LOG: checkpoint starting: time
+<14>Jan 15 12:36:10 dbserver01 postgres[2345]: LOG: checkpoint complete: wrote 42 buffers (0.3%)
+<4>Jan 15 12:36:15 kernelhost01 kernel: [12345.678] Out of memory: Kill process 1234 (java) score 900 or sacrifice child
+<6>Jan 15 12:36:20 router01 BGP[100]: Neighbor 10.255.0.1 Up
+<6>Jan 15 12:36:25 router01 BGP[100]: Neighbor 10.255.0.2 Down (Hold time expired)
+<134>Jan 15 12:36:30 webserver02 apache[4567]: [error] [client 192.168.1.200] File does not exist: /var/www/html/favicon.ico
+<165>Jan 15 12:36:35 securityappliance snort[8901]: [1:2001:3] ET SCAN Potential SSH Scan [Classification: Attempted Information Leak] [Priority: 2] {TCP} 203.0.113.50:12345 -> 10.0.0.100:22
+<134>Jan 15 12:36:40 container-host01 dockerd[1111]: Container 8a3b2c started (image=nginx:latest)
+<134>Jan 15 12:36:45 container-host01 dockerd[1111]: Container 8a3b2c health check passed
+<134>Jan 15 12:36:50 monitor01 zabbix_agentd[2222]: agent started [zabbix_agentd (Linux)]

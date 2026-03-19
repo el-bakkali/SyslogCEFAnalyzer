@@ -1,0 +1,15 @@
+<166>Jan 15 12:34:56 asa01 %ASA-6-302013: Built inbound TCP connection 12345 for outside:203.0.113.5/45678 (203.0.113.5/45678) to inside:10.0.0.100/443 (10.0.0.100/443)
+<166>Jan 15 12:34:57 asa01 %ASA-6-302014: Teardown TCP connection 12345 for outside:203.0.113.5/45678 to inside:10.0.0.100/443 duration 0:00:30 bytes 15234 TCP FINs
+<164>Jan 15 12:35:01 asa01 %ASA-4-106023: Deny tcp src outside:203.0.113.50/12345 dst inside:10.0.0.100/22 by access-group "outside_in" [0x0, 0x0]
+<164>Jan 15 12:35:02 asa01 %ASA-4-106023: Deny udp src outside:198.51.100.10/53 dst inside:10.0.0.200/1025 by access-group "outside_in" [0x0, 0x0]
+<166>Jan 15 12:35:05 asa01 %ASA-6-305011: Built dynamic TCP translation from inside:10.0.0.50/54321 to outside:198.51.100.1/54321
+<166>Jan 15 12:35:06 asa01 %ASA-6-305012: Teardown dynamic TCP translation from inside:10.0.0.50/54321 to outside:198.51.100.1/54321 duration 0:01:00
+<166>Jan 15 12:35:10 asa01 %ASA-6-302015: Built inbound UDP connection 67890 for outside:8.8.8.8/53 (8.8.8.8/53) to inside:10.0.0.10/5353 (10.0.0.10/5353)
+<166>Jan 15 12:35:11 asa01 %ASA-6-302016: Teardown UDP connection 67890 for outside:8.8.8.8/53 to inside:10.0.0.10/5353 duration 0:00:01 bytes 128
+<163>Jan 15 12:35:15 asa01 %ASA-3-402117: IPSEC: Received a packet (SPI=0x12345678) from 203.0.113.100 to 10.0.0.1 with an SPI that does not match
+<162>Jan 15 12:35:16 asa01 %ASA-2-106001: Inbound TCP connection denied from 203.0.113.200/44444 to 10.0.0.100/3389 flags SYN on interface outside
+<166>Jan 15 12:35:20 asa01 %ASA-6-106100: access-list outside_in permitted tcp outside/203.0.113.5(45678) -> inside/10.0.0.100(443) hit-cnt 1 first hit
+<164>Jan 15 12:35:25 asa01 %ASA-4-733100: [Scanning] drop rate-1 exceeded. Current burst rate is 25 per second, max configured rate is 10; Current average rate is 15 per second
+<164>Jan 15 12:35:30 asa01 %ASA-4-313001: Denied ICMP type=8, code=0 from 203.0.113.5 on interface outside
+<166>Jan 15 12:35:35 asa01 %ASA-6-710003: TCP access denied by ACL from 203.0.113.100/12345 to outside:10.0.0.1/23
+<161>Jan 15 12:35:40 asa01 %ASA-1-106021: Deny TCP reverse path check from 198.51.100.50 to 10.0.0.100 on interface outside

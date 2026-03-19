@@ -1,0 +1,13 @@
+<134>1 2025-01-15T12:34:56.789Z webserver01 nginx 1234 REQ001 - GET /api/health returned 200 in 45ms
+<134>1 2025-01-15T12:34:57.123Z webserver01 nginx 1234 REQ002 [meta src="192.168.1.101" method="POST"] POST /api/data returned 201
+<38>1 2025-01-15T12:35:01.456Z firewall01 sshd 5678 AUTH001 - Accepted publickey for admin from 10.0.0.50
+<38>1 2025-01-15T12:35:02.789Z firewall01 sshd 5679 AUTH002 - Failed password for root from 203.0.113.5
+<134>1 2025-01-15T12:35:10.000Z appserver01 myapp 9012 STARTUP - Starting application version 2.1.0
+<134>1 2025-01-15T12:35:11.100Z appserver01 myapp 9012 DB001 [db host="db01.internal" port="5432"] Connected to database
+<134>1 2025-01-15T12:35:12.200Z appserver01 myapp 9012 LISTEN - Listening on port 8080
+<165>1 2025-01-15T12:35:15.300Z secappliance snort 8901 IDS001 [alert sig="ET SCAN" priority="2"] Potential SSH Scan from 203.0.113.50
+<14>1 2025-01-15T12:36:05.000Z dbserver01 postgres 2345 CKPT01 - checkpoint starting: time
+<6>1 2025-01-15T12:36:20.000Z router01 bgpd 100 BGP001 - Neighbor 10.255.0.1 Up
+<86>1 2025-01-15T12:36:30.500Z mailserver01 postfix 3456 SMTP01 [queue id="ABC123"] Message delivered to user@example.com
+<134>1 2025-01-15T12:36:40.000Z container-host01 dockerd 1111 - - Container 8a3b2c started
+<134>1 2025-01-15T12:36:45.000Z monitor01 zabbix 2222 AGENT01 - Agent started successfully

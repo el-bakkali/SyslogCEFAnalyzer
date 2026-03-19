@@ -1,0 +1,8 @@
+<166>Jan 15 12:34:56 ftd01 %FTD-6-305012: Teardown dynamic TCP translation from inside:10.51.100.1/54453 to outside:10.0.2.3/54453 duration 0:00:30
+<166>Jan 15 12:34:57 ftd01 %FTD-6-302013: Built inbound TCP connection 99999 for outside:203.0.113.5/45678 to dmz:172.16.0.100/443
+<164>Jan 15 12:35:01 ftd01 %FTD-4-106023: Deny tcp src outside:203.0.113.50/9999 dst inside:10.0.0.100/22 by access-group "FTD-outside-in"
+<166>Jan 15 12:35:05 ftd01 %FTD-6-302014: Teardown TCP connection 99999 for outside:203.0.113.5/45678 to dmz:172.16.0.100/443 duration 0:02:15 bytes 524288 TCP FINs
+<165>Jan 15 12:35:10 ftd01 %FTD-5-111010: User 'admin', running 'CLI' from IP 10.0.0.1, executed 'show running-config'
+<163>Jan 15 12:35:15 ftd01 %FTD-3-402119: IPSEC: Received an ESP packet (SPI=0xABCDEF01) from 198.51.100.100 to 10.0.0.1 that failed decryption
+<166>Jan 15 12:35:20 ftd01 %FTD-6-305011: Built dynamic TCP translation from inside:10.0.0.50/8080 to outside:198.51.100.1/8080
+<164>Jan 15 12:35:25 ftd01 %FTD-4-733100: [DDoS] drop rate-1 exceeded. Current burst rate is 500 per second, max configured rate is 100

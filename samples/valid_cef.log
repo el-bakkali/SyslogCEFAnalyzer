@@ -1,0 +1,10 @@
+<134>Jan 15 12:34:56 forwarder01 CEF:0|Palo Alto Networks|PAN-OS|10.2.3|THREAT|url-filtering|5|src=192.168.1.100 dst=93.184.216.34 spt=45123 dpt=443 act=allow request=https://example.com/page cs1Label=Rule cs1=AllowWeb
+<134>Jan 15 12:34:57 forwarder01 CEF:0|Palo Alto Networks|PAN-OS|10.2.3|THREAT|spyware|8|src=10.0.0.50 dst=203.0.113.100 spt=12345 dpt=80 act=drop cs1Label=Rule cs1=BlockMalware msg=Spyware phone-home detected
+<134>Jan 15 12:35:01 forwarder01 CEF:0|Fortinet|FortiGate|7.2.0|0419016384|ssl-utm-detected|4|src=192.168.1.200 dst=198.51.100.50 spt=54321 dpt=443 act=blocked proto=TCP
+<134>Jan 15 12:35:02 forwarder01 CEF:0|Check Point|VPN-1|R81.20|DDoS|DDoS Attack|9|src=203.0.113.0 dst=10.0.0.1 spt=0 dpt=80 act=Drop msg=SYN flood detected cnt=15000
+<134>Jan 15 12:35:10 forwarder01 CEF:0|CrowdStrike|Falcon|6.45|ProcessCreate|Process Created|3|src=10.0.0.100 fname=cmd.exe fsize=289792 msg=New process created by explorer.exe
+<134>Jan 15 12:35:11 forwarder01 CEF:0|Microsoft|Windows|10.0|4625|An account failed to log on|7|src=203.0.113.5 dst=10.0.0.50 suser=administrator outcome=Failure reason=Bad password
+<134>Jan 15 12:35:12 forwarder01 CEF:0|Microsoft|Windows|10.0|4624|An account was successfully logged on|3|src=10.0.0.1 dst=10.0.0.50 suser=admin outcome=Success cs1Label=LogonType cs1=10
+<134>Jan 15 12:35:15 forwarder01 CEF:0|Cisco|ASA|9.18|106023|Deny|5|src=203.0.113.200 dst=10.0.0.100 spt=44444 dpt=22 proto=TCP act=Deny msg=access-list outside_in denied tcp
+<134>Jan 15 12:35:16 forwarder01 CEF:0|Trend Micro|Deep Security|20.0|1011466|IPS Rule|6|src=198.51.100.100 dst=10.0.0.200 act=Block msg=Apache Struts2 Remote Code Execution
+<134>Jan 15 12:35:20 forwarder01 CEF:0|Symantec|Endpoint Protection|14.3|Malware|Malware Detected|8|src=192.168.1.150 fname=suspicious.exe act=Quarantine msg=Trojan.Gen.2 detected
